@@ -1,0 +1,8 @@
+{
+  "name": "PhotoAppBetty",
+  "description": "Small Photo Repository",
+  "repository": "https://github.com/bettyak/PhotoAppBetty",
+  "logo": "http://node-js-sample.herokuapp.com/node.svg",
+  "keywords": ["node", "express", "static"],
+  "image": "heroku/nodejs"
+}
