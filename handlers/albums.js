@@ -50,8 +50,8 @@ Album.prototype.photos = function (pn, ps, callback) {
         }
     );
 };             
-Album.prototype.add_photo = function (data, path, callback) {
-    album_data.add_photo(data, path, function (err, photo_data) {
+Album.prototype.add_photo = function (data, filename, path, callback) {
+    album_data.add_photo(data, filename, path, function (err, photo_data) {
         if (err)
             callback(err);
         else {
@@ -230,10 +230,10 @@ exports.add_photo_to_album = function (req, res) {
                 cb(helpers.no_such_album());
                 return;
             }
-
+	    console.log(req.file);
             album = new Album(album_data);
             req.body.filename = req.file.originalname;
-            album.add_photo(req.body, req.file.path, cb);
+            album.add_photo(req.body, req.file.originalname, req.file.path, cb);
         }
     ],
     function (err, p) {

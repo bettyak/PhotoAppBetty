@@ -16,6 +16,7 @@ exports.verify = function (data, field_names) {
 exports.error = function (code, message) {
     var e = new Error(message);
     e.code = code;
+    console.log("RETURNING ERROR: " + JSON.stringify(e));
     return e;
 };
 

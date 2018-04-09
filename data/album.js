@@ -40,10 +40,20 @@ exports.create_album = function (data, callback) {
 
         function (results, fields, cb) {
             write_succeeded = true;
-            fs.mkdir(local.config.static_content
-                     + "albums/" + data.name, cb);
-        }
-    ], 
+            fs.mkdir('.' + local.config.static_content
+                     + "albums/", function (err) {
+			if (!err || (err && err.code == "EEXIST")) {
+				cb(null);
+			} else {
+				cb(err);
+			}
+		});
+    	],
+	function (cb) {
+		fs.mkdir('.' + local.config.static_content + 'albums/' + data.name + "/",
+			  cb);
+	}
+], 
     function (err, results) {
         if (err) {
             if (write_succeeded) delete_album(dbc, data.name);
@@ -126,9 +136,11 @@ exports.all_albums = function (sort_by, desc, skip, count, callback) {
 
 
 exports.add_photo = function (photo_data, path_to_photo, callback) {
-    var base_fn = path.basename(path_to_photo).toLowerCase();
+    var base_fn = path.basename(filenae).toLowerCase();
     var write_succeeded = false;
     var dbc;
+
+    var basepath = __dirname + '/..' + local.config.static_content + 'albums/';
 
     async.waterfall([
         // validate data
@@ -137,9 +149,11 @@ exports.add_photo = function (photo_data, path_to_photo, callback) {
                 backhelp.verify(photo_data,
                                 [ "albumid", "description", "date" ]);
                 photo_data.filename = base_fn;
-                if (!backhelp.valid_filename(photo_data.albumid))
+                if (!backhelp.valid_filename(photo_data.albumid)) {
                     throw invalid_album_name();
+		}
                 cb(null);
+		return;
             } catch (e) {
                 cb(e);
                 return;
@@ -149,22 +163,31 @@ exports.add_photo = function (photo_data, path_to_photo, callback) {
         function (cb) {
             db.dbpool.query(
                 "INSERT INTO Photos VALUES (?, ?, ?, ?)",
-                [ photo_data.albumid, base_fn, photo_data.description,
+                [ photo_data.albumid, photo_data.filename, photo_data.description,
                   photo_data.date ],
                 cb);
         },
 
+
+	function (results, fields, cb) {
+		write_succeeded = true'
+		fs.mkdir(basepath, function () { cb(null); });
+	},
+	function (cb) {
+		var pttth = basepath + photo_data.albumid + "/";
+		fs.mkdir(pttth, function () { cb(null); });
+	}, 
+
         //temp file to static
-        function (results, fields, cb) {
-            console.log(arguments);
+        function (cb) {
             write_succeeded = true;
-            var save_path = local.config.static_content + "albums/"
+            var save_path = '.' + local.config.static_content + "albums/"
                 + photo_data.albumid + "/" + base_fn;
             backhelp.file_copy(path_to_photo, save_path, true, cb);
         },
 
     ],
-    function (err, results) {
+    function (err, results, fields) {
         if (err && write_succeeded) 
             delete_photo(dbc, photo_data.albumid, base_fn);
         if (err) {
@@ -190,14 +213,14 @@ function invalid_filename() {
 
 
 function delete_album(dbc, name) {
-    dbc.query(
+    db.dppool.query(
         "DELETE FROM Albums WHERE name = ?",
         [ name ],
         function (err, results) {});
 }
 
 function delete_photo(dbc, albumid, fn) {
-    dbc.query(
+    db.pool.query(
         "DELETE FROM Photos WHERE albumid = ? AND filename = ?",
         [ albumid, fn ],
         function (err, results) { });

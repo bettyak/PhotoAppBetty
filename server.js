@@ -20,9 +20,9 @@ app.use(express.static(__dirname + "/../static"));
 
 var session_configuration = {
     secret: 'regis_university',
-    resave: false,
+    resave: true,
     saveUninitialized: true,
-    cookie: { secure: true }
+    cookie: { httpOnly: true }
 };
 
 session_configuration.cookie.secure = false;
@@ -107,7 +107,10 @@ passport.deserializeUser(function(userid, done) {
 });
 
 //API
-app.get('/v1/albums.json', album_hdlr.list_all);
+app.get('/v1/albums.json', function (req, res, next) {
+	console.log("I AM HERE!!!");
+	next();
+}, album_hdlr.list_all);
 app.put('/v1/albums.json', alwaysAuthenticated, album_hdlr.create_album);
 app.get('/v1/albums/:album_name.json', album_hdlr.album_by_name);
 app.get('/v1/albums/:album_name/photos.json', album_hdlr.photos_for_album);
@@ -153,7 +156,8 @@ function four_oh_four(req, res) {
     res.end(JSON.stringify(helpers.invalid_resource()) + "\n");
 }
 
+var port = process.env.PORT || 5000;
 
 db.init();
-app.listen(8080);
+app.listen(port);
 

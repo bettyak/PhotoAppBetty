@@ -32,7 +32,7 @@ exports.user_by_email_address = function (email, callback) {
 exports.register = function (email, display_name, password, callback) {
     var userid;
     async.waterfall([
-        // validate ze params
+        // validate params
         function (cb) {
             if (!email || email.indexOf("@") == -1)
                 cb(backhelp.missing_data("email"));
